@@ -607,7 +607,7 @@
     <!-- Status Bar -->
     <div class="status-bar" id="statusBar" role="status" aria-live="polite" aria-atomic="true">
       <div class="status-bar__info">
-        <span id="statusText">输入金额开始换算</span>
+        <span id="statusText"></span>
       </div>
       <div class="status-bar__cache" id="cacheInfo">
         <span class="status-bar__cache-dot"></span>
@@ -619,8 +619,8 @@
     <div class="cards-grid" id="resultsGrid" role="list" aria-label="换算结果">
       <div class="empty-state" aria-label="等待输入">
         <div class="empty-state__icon">💱</div>
-        <p class="empty-state__title">输入金额，开启汇率换算</p>
-        <p class="empty-state__desc">选择目标货币查看换算结果</p>
+        <p class="empty-state__title"></p>
+        <p class="empty-state__desc"></p>
       </div>
     </div>
 
@@ -932,8 +932,8 @@
         resultsGrid.innerHTML = `
           <div class="empty-state">
             <div class="empty-state__icon">💱</div>
-            <p class="empty-state__title">输入金额，开启汇率换算</p>
-            <p class="empty-state__desc">选择目标货币查看换算结果</p>
+            <p class="empty-state__title"></p>
+            <p class="empty-state__desc"></p>
           </div>`;
         updateStatus('', '');
         document.getElementById('sourceEmptyHint').classList.add('is-visible');
