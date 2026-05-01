@@ -272,61 +272,6 @@
     }
     .toggle-pill__btn:not(.active):hover { color: var(--text-mid); background: rgba(0, 0, 0, 0.04); }
 
-    /* ─── Status Bar ─────────────────────────────────────────────── */
-    .status-bar {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      flex-wrap: wrap;
-      gap: 8px;
-      padding: 10px 16px;
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-sm);
-      font-size: 12px;
-      animation: fadeDown 0.6s 0.15s ease both;
-    }
-    .status-bar__info {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      color: var(--text-mid);
-    }
-    .status-bar__info strong { color: var(--text-hi); font-weight: 600; }
-    .status-bar__cache {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      color: var(--text-lo);
-      font-size: 11px;
-    }
-    .status-bar__cache.is-cached { color: var(--accent); }
-    .status-bar__cache-dot {
-      width: 5px; height: 5px; border-radius: 50%; background: var(--text-lo);
-    }
-    .status-bar__cache.is-cached .status-bar__cache-dot { background: var(--accent); }
-    .status-bar__msg {
-      font-size: 12px;
-      padding: 3px 10px;
-      border-radius: 20px;
-      font-weight: 500;
-    }
-    .status-bar__msg--warn {
-      background: rgba(255, 200, 0, 0.1);
-      border: 1px solid rgba(255, 200, 0, 0.25);
-      color: #b37400;
-    }
-    .status-bar__msg--error {
-      background: rgba(255, 59, 48, 0.1);
-      border: 1px solid rgba(255, 59, 48, 0.25);
-      color: var(--red);
-    }
-    .status-bar__msg--cached {
-      background: var(--accent-dim);
-      border: 1px solid var(--border);
-      color: var(--accent);
-    }
-
     /* ─── Error Hint ─────────────────────────────────────────────── */
     .error-hint {
       font-size: 12px;
@@ -610,17 +555,6 @@
       </div>
     </section>
 
-    <!-- Status Bar -->
-    <div class="status-bar" id="statusBar" role="status" aria-live="polite" aria-atomic="true" style="display:none;">
-      <div class="status-bar__info">
-        <span id="statusText"></span>
-      </div>
-      <div class="status-bar__cache" id="cacheInfo">
-        <span class="status-bar__cache-dot"></span>
-        <span id="cacheText">frankfurter.app</span>
-      </div>
-    </div>
-
     <!-- Results Cards Grid -->
     <div class="cards-grid" id="resultsGrid" role="list" aria-label="换算结果">
       <div class="empty-state" aria-label="等待输入">
@@ -678,10 +612,6 @@
     const baseCurrencyPrefix = document.getElementById('baseCurrencyPrefix');
     const sourceLabel = document.getElementById('sourceLabel');
     const resultsGrid      = document.getElementById('resultsGrid');
-    const statusBar        = document.getElementById('statusBar');
-    const statusText        = document.getElementById('statusText');
-    const cacheInfo         = document.getElementById('cacheInfo');
-    const cacheText         = document.getElementById('cacheText');
     const inputError        = document.getElementById('inputError');
     const toggleBtns        = document.querySelectorAll('.toggle-pill__btn');
 
@@ -779,49 +709,16 @@
         rates = cached;
         lastFetched = Date.now(); // treat as fresh enough
         isFromCache = true;
-        updateCacheUI(true);
         return rates;
       }
 
       // 3. Fetch fresh
       isFromCache = false;
-      updateCacheUI(false);
       const result = await fetchRates(base);
       rates = result.rates;
       lastFetched = Date.now();
       writeCache(base, rates);
       return rates;
-    }
-
-    /* ─── Update UI ─────────────────────────────────────────────── */
-    function updateCacheUI(fromCache) {
-      if (fromCache) {
-        cacheInfo.classList.add('is-cached');
-        cacheText.textContent = '缓存数据';
-      } else {
-        cacheInfo.classList.remove('is-cached');
-        cacheText.textContent = 'frankfurter.app';
-      }
-    }
-
-    function updateStatus(msg, type) {
-      // Remove old type classes
-      statusBar.querySelectorAll('.status-bar__msg').forEach(el => el.remove());
-      if (!msg) return;
-
-      // Extract leading icon if present
-      const iconMatch = msg.match(/^([^\w]+)\s*(.*)/);
-      let icon = '';
-      let text = msg;
-      if (iconMatch && !/^[a-z]/i.test(iconMatch[1])) {
-        icon = iconMatch[1];
-        text = iconMatch[2];
-      }
-
-      const badge = document.createElement('span');
-      badge.className = `status-bar__msg status-bar__msg--${type || 'info'}`;
-      badge.textContent = `${icon} ${text}`.trim();
-      statusText.parentElement.insertBefore(badge, statusText.nextSibling);
     }
 
     function buildCurrencyOptions(selectedCode, excludeCode) {
@@ -940,7 +837,6 @@
             <p class="empty-state__title"></p>
             <p class="empty-state__desc"></p>
           </div>`;
-        updateStatus('', '');
         document.getElementById('sourceEmptyHint').classList.add('is-visible');
         return;
       }
@@ -953,25 +849,21 @@
       setInputError('');
       document.getElementById('sourceEmptyHint').classList.remove('is-visible');
       showSkeletons();
-      updateStatus('正在获取汇率...', '');
 
       try {
         const ratesObj = await getRates(baseCurrency);
         renderCards(currentAmount, ratesObj, precision);
 
         if (isFromCache) {
-          const time = new Date(lastFetched).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
-          updateStatus(`当前数据来自缓存（更新时间：${time}）`, 'cached');
+          // cached — silent, no status bar
         } else {
-          updateStatus('', '');
+          // fresh — silent
         }
       } catch (err) {
         // Show cached fallback
         const fallback = readCache(baseCurrency);
         if (fallback) {
           renderCards(currentAmount, fallback, precision);
-          const time = new Date(lastFetched || Date.now()).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
-          updateStatus(`汇率获取失败，数据来自缓存（更新时间：${time}）`, 'warn');
         } else {
           resultsGrid.innerHTML = `
             <div class="empty-state">
@@ -979,7 +871,6 @@
               <p class="empty-state__title">汇率获取失败</p>
               <p class="empty-state__desc">${err.message === 'TIMEOUT' ? '请求超时，请稍后重试' : '网络异常，请检查网络连接'}</p>
             </div>`;
-          updateStatus('汇率获取失败，请稍后重试', 'error');
         }
       }
     }
@@ -1012,17 +903,7 @@
       });
     });
 
-    // ── Weekend/Holiday Notice ────────────────────────────────────
-    function checkMarketStatus() {
-      const now = new Date();
-      const day = now.getDay(); // 0=Sun, 6=Sat
-      if (day === 0 || day === 6) {
-        updateStatus('周末非交易日，数据可能延迟', 'warn');
-      }
-    }
-
     // Initialize
-    checkMarketStatus();
   </script>
 </body>
   // superpower writing plan + ssd test OK
