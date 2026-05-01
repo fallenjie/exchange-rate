@@ -1,0 +1,951 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>汇率换算 — Exchange Rate</title>
+  <meta name="description" content="实时汇率换算工具，支持10种主流货币" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    /* ─── Design Tokens ─────────────────────────────────────────── */
+    :root {
+      --bg-base:     #0a0e14;
+      --bg-card:     #131b27;
+      --bg-input:    #0f1520;
+      --bg-hover:    #1a2436;
+      --border:      rgba(240, 165, 0, 0.12);
+      --border-hi:   rgba(240, 165, 0, 0.35);
+      --accent:      #f0a500;
+      --accent-dim:  rgba(240, 165, 0, 0.15);
+      --accent-glow: rgba(240, 165, 0, 0.25);
+      --text-hi:     #f0f4ff;
+      --text-mid:    #8899bb;
+      --text-lo:     #4a5a7a;
+      --red:         #ff5c5c;
+      --green:       #3ecf8e;
+      --radius:      14px;
+      --radius-sm:   8px;
+      --shadow-card: 0 4px 32px rgba(0,0,0,0.55), 0 1px 0 rgba(255,255,255,0.04) inset;
+      --shadow-glow: 0 0 40px rgba(240,165,0,0.12);
+      --font-sans:   'DM Sans', system-ui, sans-serif;
+      --font-mono:   'DM Mono', 'Fira Code', monospace;
+      --transition:  all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* ─── Reset ─────────────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; font-size: 16px; }
+    body {
+      font-family: var(--font-sans);
+      background-color: var(--bg-base);
+      background-image:
+        radial-gradient(ellipse 80% 50% at 50% -10%, rgba(240,165,0,0.07) 0%, transparent 70%),
+        repeating-linear-gradient(0deg, transparent, transparent 79px, rgba(255,255,255,0.018) 79px, rgba(255,255,255,0.018) 80px),
+        repeating-linear-gradient(90deg, transparent, transparent 79px, rgba(255,255,255,0.018) 79px, rgba(255,255,255,0.018) 80px);
+      color: var(--text-hi);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 48px 20px 80px;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ─── Selection & Scrollbar ─────────────────────────────────── */
+    ::selection { background: var(--accent); color: #0a0e14; }
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: var(--bg-base); }
+    ::-webkit-scrollbar-thumb { background: var(--text-lo); border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--accent); }
+
+    /* ─── Header ─────────────────────────────────────────────────── */
+    .header {
+      text-align: center;
+      margin-bottom: 48px;
+      animation: fadeDown 0.6s ease both;
+    }
+    .header__eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--accent);
+      background: var(--accent-dim);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 5px 12px;
+      margin-bottom: 16px;
+    }
+    .header__eyebrow-dot {
+      width: 5px; height: 5px;
+      border-radius: 50%;
+      background: var(--accent);
+      animation: pulse-dot 2s ease infinite;
+    }
+    .header__title {
+      font-size: clamp(2rem, 5vw, 3.2rem);
+      font-weight: 700;
+      line-height: 1.15;
+      letter-spacing: -0.03em;
+      background: linear-gradient(135deg, #fff 0%, var(--accent) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 10px;
+    }
+    .header__subtitle {
+      font-size: 15px;
+      color: var(--text-mid);
+      font-weight: 400;
+    }
+    .header__live {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      color: var(--green);
+      font-size: 12px;
+      font-weight: 500;
+    }
+    .header__live-dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--green);
+      animation: pulse-dot 1.5s ease infinite;
+    }
+
+    /* ─── App Container ──────────────────────────────────────────── */
+    .app {
+      width: 100%;
+      max-width: 880px;
+      display: flex;
+      flex-direction: column;
+      gap: 28px;
+    }
+
+    /* ─── Controls Row ───────────────────────────────────────────── */
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 14px;
+      align-items: flex-end;
+      animation: fadeDown 0.6s 0.1s ease both;
+    }
+    .ctrl {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .ctrl--grow { flex: 1; min-width: 200px; }
+    .ctrl__label {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text-lo);
+    }
+
+    /* ─── Input ──────────────────────────────────────────────────── */
+    .input-wrap {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+    .input-wrap__prefix {
+      position: absolute;
+      left: 16px;
+      font-size: 20px;
+      font-weight: 600;
+      color: var(--accent);
+      pointer-events: none;
+      z-index: 1;
+      transition: var(--transition);
+    }
+    .input {
+      width: 100%;
+      height: 60px;
+      background: var(--bg-input);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius);
+      padding: 0 16px 0 44px;
+      font-family: var(--font-mono);
+      font-size: 20px;
+      font-weight: 500;
+      color: var(--text-hi);
+      outline: none;
+      transition: var(--transition);
+      letter-spacing: 0.02em;
+    }
+    .input::placeholder { color: var(--text-lo); font-family: var(--font-sans); font-size: 15px; }
+    .input:hover { border-color: var(--border-hi); background: var(--bg-hover); }
+    .input:focus {
+      border-color: var(--accent);
+      background: var(--bg-hover);
+      box-shadow: 0 0 0 3px var(--accent-glow), var(--shadow-card);
+    }
+    .input.has-error { border-color: var(--red); }
+    .input.has-error:focus { box-shadow: 0 0 0 3px rgba(255,92,92,0.2); }
+    .input-hint {
+      font-size: 11px;
+      color: var(--text-lo);
+      padding-left: 2px;
+    }
+
+    /* ─── Select ─────────────────────────────────────────────────── */
+    .select {
+      height: 60px;
+      min-width: 160px;
+      background: var(--bg-input);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius);
+      padding: 0 40px 0 16px;
+      font-family: var(--font-sans);
+      font-size: 15px;
+      font-weight: 500;
+      color: var(--text-hi);
+      outline: none;
+      cursor: pointer;
+      appearance: none;
+      -webkit-appearance: none;
+      transition: var(--transition);
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' viewBox='0 0 24 24'%3E%3Cpath stroke='%238899bb' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 14px center;
+    }
+    .select:hover { border-color: var(--border-hi); background-color: var(--bg-hover); }
+    .select:focus { border-color: var(--accent); background-color: var(--bg-hover); box-shadow: 0 0 0 3px var(--accent-glow); }
+    .select option { background: var(--bg-card); color: var(--text-hi); }
+
+    /* ─── Toggle Pill ────────────────────────────────────────────── */
+    .toggle-pill {
+      display: flex;
+      background: var(--bg-input);
+      border: 1.5px solid var(--border);
+      border-radius: 30px;
+      padding: 4px;
+      gap: 2px;
+      height: 40px;
+      align-items: center;
+    }
+    .toggle-pill__btn {
+      border: none;
+      background: transparent;
+      color: var(--text-lo);
+      font-family: var(--font-sans);
+      font-size: 12px;
+      font-weight: 600;
+      padding: 5px 14px;
+      border-radius: 20px;
+      cursor: pointer;
+      transition: var(--transition);
+      letter-spacing: 0.05em;
+    }
+    .toggle-pill__btn.active {
+      background: var(--accent);
+      color: #0a0e14;
+    }
+    .toggle-pill__btn:not(.active):hover { color: var(--text-hi); background: rgba(255,255,255,0.05); }
+
+    /* ─── Status Bar ─────────────────────────────────────────────── */
+    .status-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 8px;
+      padding: 10px 16px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      font-size: 12px;
+      animation: fadeDown 0.6s 0.15s ease both;
+    }
+    .status-bar__info {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--text-mid);
+    }
+    .status-bar__info strong { color: var(--text-hi); font-weight: 600; }
+    .status-bar__cache {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--text-lo);
+      font-size: 11px;
+    }
+    .status-bar__cache.is-cached { color: var(--accent); }
+    .status-bar__cache-dot {
+      width: 5px; height: 5px; border-radius: 50%; background: var(--text-lo);
+    }
+    .status-bar__cache.is-cached .status-bar__cache-dot { background: var(--accent); }
+    .status-bar__msg {
+      font-size: 12px;
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-weight: 500;
+    }
+    .status-bar__msg--warn {
+      background: rgba(255,200,0,0.1);
+      border: 1px solid rgba(255,200,0,0.25);
+      color: #ffc800;
+    }
+    .status-bar__msg--error {
+      background: rgba(255,92,92,0.1);
+      border: 1px solid rgba(255,92,92,0.25);
+      color: var(--red);
+    }
+    .status-bar__msg--cached {
+      background: var(--accent-dim);
+      border: 1px solid var(--border);
+      color: var(--accent);
+    }
+
+    /* ─── Error Hint ─────────────────────────────────────────────── */
+    .error-hint {
+      font-size: 12px;
+      color: var(--red);
+      padding: 6px 0 0 2px;
+      min-height: 20px;
+      animation: fadeIn 0.2s ease;
+    }
+
+    /* ─── Grid ───────────────────────────────────────────────────── */
+    .results-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 14px;
+      animation: fadeDown 0.6s 0.2s ease both;
+    }
+
+    /* ─── Card Skeleton ──────────────────────────────────────────── */
+    .card-skeleton {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+      height: 100px;
+      overflow: hidden;
+      position: relative;
+    }
+    .card-skeleton::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(90deg, transparent 0%, rgba(240,165,0,0.05) 50%, transparent 100%);
+      animation: shimmer 1.5s infinite;
+    }
+    .sk-line {
+      height: 10px;
+      border-radius: 5px;
+      background: rgba(255,255,255,0.06);
+      margin-bottom: 10px;
+    }
+    .sk-line--sm { width: 40%; }
+    .sk-line--md { width: 70%; }
+    .sk-line--lg { width: 85%; }
+
+    /* ─── Result Card ────────────────────────────────────────────── */
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      position: relative;
+      overflow: hidden;
+      transition: var(--transition);
+      cursor: default;
+      opacity: 0;
+      transform: translateY(12px);
+    }
+    .card.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--accent), transparent);
+      opacity: 0;
+      transition: var(--transition);
+    }
+    .card:hover {
+      border-color: var(--border-hi);
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-card), var(--shadow-glow);
+    }
+    .card:hover::before { opacity: 1; }
+    .card.is-base {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 1px rgba(240,165,0,0.15), var(--shadow-card);
+    }
+    .card.is-base::before { opacity: 1; }
+    .card__symbol {
+      font-size: 22px;
+      line-height: 1;
+      color: var(--accent);
+      font-weight: 700;
+      font-family: var(--font-mono);
+    }
+    .card__amount {
+      font-size: 24px;
+      font-weight: 700;
+      font-family: var(--font-mono);
+      color: var(--text-hi);
+      line-height: 1.2;
+      letter-spacing: -0.01em;
+      word-break: break-all;
+    }
+    .card__code {
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      color: var(--text-mid);
+      text-transform: uppercase;
+    }
+    .card__name {
+      font-size: 12px;
+      color: var(--text-lo);
+    }
+    .card__rate {
+      margin-top: 4px;
+      font-size: 10px;
+      color: var(--text-lo);
+      font-family: var(--font-mono);
+    }
+
+    /* ─── Empty State ────────────────────────────────────────────── */
+    .empty-state {
+      grid-column: 1 / -1;
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--text-lo);
+      animation: fadeIn 0.4s ease;
+    }
+    .empty-state__icon {
+      font-size: 48px;
+      margin-bottom: 16px;
+      opacity: 0.4;
+    }
+    .empty-state__title {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text-mid);
+      margin-bottom: 6px;
+    }
+    .empty-state__desc { font-size: 13px; }
+
+    /* ─── Footer ─────────────────────────────────────────────────── */
+    .footer {
+      margin-top: 60px;
+      text-align: center;
+      font-size: 11px;
+      color: var(--text-lo);
+      animation: fadeDown 0.6s 0.3s ease both;
+    }
+    .footer a {
+      color: var(--text-mid);
+      text-decoration: none;
+      transition: var(--transition);
+    }
+    .footer a:hover { color: var(--accent); }
+
+    /* ─── Animations ─────────────────────────────────────────────── */
+    @keyframes fadeDown {
+      from { opacity: 0; transform: translateY(-10px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to   { opacity: 1; }
+    }
+    @keyframes shimmer {
+      from { transform: translateX(-100%); }
+      to   { transform: translateX(100%); }
+    }
+    @keyframes pulse-dot {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50%       { opacity: 0.5; transform: scale(0.7); }
+    }
+
+    /* ─── Responsive ─────────────────────────────────────────────── */
+    @media (max-width: 640px) {
+      body { padding: 32px 16px 60px; }
+      .header { margin-bottom: 36px; }
+      .results-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
+      .input, .select { height: 54px; }
+    }
+    @media (max-width: 400px) {
+      .results-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ─── Header ───────────────────────────────────────────────── -->
+  <header class="header" role="banner">
+    <div class="header__eyebrow">
+      <span class="header__eyebrow-dot"></span>
+      实时汇率 · Live Rates
+    </div>
+    <h1 class="header__title">货币换算</h1>
+    <p class="header__subtitle">
+      支持 <strong>10</strong> 种主流货币 &nbsp;·&nbsp;
+      <span class="header__live">
+        <span class="header__live-dot"></span>
+        数据来源 frankfurter.app
+      </span>
+    </p>
+  </header>
+
+  <!-- ─── App ─────────────────────────────────────────────────── -->
+  <main class="app" role="main" aria-label="汇率换算">
+
+    <!-- Controls -->
+    <div class="controls" role="group" aria-label="输入与设置">
+
+      <!-- Amount Input -->
+      <div class="ctrl ctrl--grow">
+        <label class="ctrl__label" for="amountInput">金额</label>
+        <div class="input-wrap">
+          <span class="input-wrap__prefix" id="baseCurrencyPrefix">$</span>
+          <input
+            type="text"
+            id="amountInput"
+            class="input"
+            placeholder="请输入金额"
+            inputmode="decimal"
+            autocomplete="off"
+            autocorrect="off"
+            spellcheck="false"
+            aria-describedby="inputHint inputError"
+          />
+        </div>
+        <span class="input-hint" id="inputHint">支持最多2位小数</span>
+        <span class="error-hint" id="inputError" role="alert" aria-live="polite"></span>
+      </div>
+
+      <!-- Base Currency -->
+      <div class="ctrl">
+        <label class="ctrl__label" for="baseCurrency">基准货币</label>
+        <select class="select" id="baseCurrency" aria-label="选择基准货币">
+          <option value="USD">🇺🇸 USD — 美元</option>
+          <option value="EUR">🇪🇺 EUR — 欧元</option>
+          <option value="GBP">🇬🇧 GBP — 英镑</option>
+          <option value="JPY">🇯🇵 JPY — 日元</option>
+          <option value="CNY">🇨🇳 CNY — 人民币</option>
+          <option value="HKD">🇭🇰 HKD — 港币</option>
+          <option value="KRW">🇰🇷 KRW — 韩元</option>
+          <option value="SGD">🇸🇬 SGD — 新加坡元</option>
+          <option value="AUD">🇦🇺 AUD — 澳元</option>
+          <option value="CAD">🇨🇦 CAD — 加元</option>
+        </select>
+      </div>
+
+      <!-- Precision -->
+      <div class="ctrl">
+        <span class="ctrl__label">小数位数</span>
+        <div class="toggle-pill" role="group" aria-label="小数位数选择">
+          <button class="toggle-pill__btn active" data-precision="2" aria-pressed="true">2位</button>
+          <button class="toggle-pill__btn" data-precision="4" aria-pressed="false">4位</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Status Bar -->
+    <div class="status-bar" id="statusBar" role="status" aria-live="polite" aria-atomic="true">
+      <div class="status-bar__info">
+        <span id="statusText">输入金额开始换算</span>
+      </div>
+      <div class="status-bar__cache" id="cacheInfo">
+        <span class="status-bar__cache-dot"></span>
+        <span id="cacheText">frankfurter.app</span>
+      </div>
+    </div>
+
+    <!-- Results -->
+    <div class="results-grid" id="resultsGrid" role="list" aria-label="换算结果">
+      <div class="empty-state" aria-label="等待输入">
+        <div class="empty-state__icon">💱</div>
+        <p class="empty-state__title">输入金额，开启汇率换算</p>
+        <p class="empty-state__desc">支持的货币：USD EUR GBP JPY CNY HKD KRW SGD AUD CAD</p>
+      </div>
+    </div>
+
+  </main>
+
+  <footer class="footer">
+    <p>
+      数据来源 <a href="https://api.frankfurter.dev/" target="_blank" rel="noopener">frankfurter.app</a>
+      &nbsp;·&nbsp;
+      汇率缓存 10 分钟
+    </p>
+  </footer>
+
+  <script>
+    /* ─── Constants ─────────────────────────────────────────────── */
+    const API_BASE   = 'https://api.frankfurter.dev/v1';
+    const CURRENCIES = {
+      USD: { symbol: '$',  name: '美元',        code: 'USD' },
+      EUR: { symbol: '€',  name: '欧元',        code: 'EUR' },
+      GBP: { symbol: '£',  name: '英镑',        code: 'GBP' },
+      JPY: { symbol: '¥',  name: '日元',        code: 'JPY' },
+      CNY: { symbol: '¥',  name: '人民币',      code: 'CNY' },
+      HKD: { symbol: '$',  name: '港币',        code: 'HKD' },
+      KRW: { symbol: '₩',  name: '韩元',        code: 'KRW' },
+      SGD: { symbol: '$',  name: '新加坡元',    code: 'SGD' },
+      AUD: { symbol: '$',  name: '澳元',        code: 'AUD' },
+      CAD: { symbol: '$',  name: '加元',        code: 'CAD' },
+    };
+    // JPY/KRW use integer amounts; others use 2
+    const CACHE_TTL   = 10 * 60 * 1000; // 10 minutes
+    const API_TIMEOUT = 5000;
+    const DEBOUNCE_MS = 300;
+
+    /* ─── State ─────────────────────────────────────────────────── */
+    let rates      = null;       // { USD: 1, EUR: 0.91, ... }
+    let baseCurrency = 'USD';
+    let precision  = 2;
+    let lastFetched = null;      // timestamp
+    let isFromCache  = false;
+    let debounceTimer = null;
+    let currentAmount = '';
+    let controller = null;       // AbortController for fetch
+
+    /* ─── Elements ─────────────────────────────────────────────── */
+    const amountInput      = document.getElementById('amountInput');
+    const baseCurrencySel  = document.getElementById('baseCurrency');
+    const baseCurrencyPrefix = document.getElementById('baseCurrencyPrefix');
+    const resultsGrid      = document.getElementById('resultsGrid');
+    const statusBar        = document.getElementById('statusBar');
+    const statusText        = document.getElementById('statusText');
+    const cacheInfo         = document.getElementById('cacheInfo');
+    const cacheText         = document.getElementById('cacheText');
+    const inputError        = document.getElementById('inputError');
+    const toggleBtns        = document.querySelectorAll('.toggle-pill__btn');
+
+    /* ─── Helpers ───────────────────────────────────────────────── */
+    const $ = (sel) => document.querySelector(sel);
+
+    function getCacheKey(base) { return `er_rates_${base}`; }
+
+    function formatNumber(value, decimals) {
+      if (value === null || value === undefined || isNaN(value)) return '—';
+      const n = parseFloat(value);
+      if (!isFinite(n)) return '—';
+      // Split integer and decimal parts
+      const fixed = n.toFixed(decimals);
+      const [intPart, decPart = ''] = fixed.split('.');
+      const formatted = intPart.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+      return decPart ? `${formatted}.${decPart}` : formatted;
+    }
+
+    function parseAmount(raw) {
+      // Remove all non-digit and non-dot characters, keep only first dot
+      const cleaned = raw.replace(/[^\d.]/g, '');
+      const dotIdx = cleaned.indexOf('.');
+      const sanitized = dotIdx === -1
+        ? cleaned
+        : cleaned.slice(0, dotIdx + 1) + cleaned.slice(dotIdx + 1).replace(/\./g, '');
+      return sanitized;
+    }
+
+    function validateAmount(value) {
+      if (value === '' || value === '.') return { ok: false, msg: '' }; // empty = no error
+      const num = parseFloat(value);
+      if (isNaN(num)) return { ok: false, msg: '请输入有效数字' };
+      if (num <= 0)   return { ok: false, msg: '请输入正数' };
+      if (num > 999_999_999_999) return { ok: false, msg: '金额过大，请重新输入' };
+      return { ok: true, msg: '' };
+    }
+
+    /* ─── Cache ─────────────────────────────────────────────────── */
+    function readCache(base) {
+      try {
+        const raw = localStorage.getItem(getCacheKey(base));
+        if (!raw) return null;
+        const { rates: r, ts } = JSON.parse(raw);
+        if (Date.now() - ts > CACHE_TTL) return null;
+        return r;
+      } catch { return null; }
+    }
+
+    function writeCache(base, r) {
+      try {
+        localStorage.setItem(getCacheKey(base), JSON.stringify({ rates: r, ts: Date.now() }));
+      } catch {}
+    }
+
+    /* ─── API Fetch ─────────────────────────────────────────────── */
+    async function fetchRates(base) {
+      // Cancel any in-flight request
+      if (controller) { controller.abort(); controller = null; }
+      controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), API_TIMEOUT);
+
+      try {
+        const resp = await fetch(`${API_BASE}/latest?from=${base}`, {
+          signal: controller.signal,
+        });
+        clearTimeout(timeout);
+        if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+        const data = await resp.json();
+        return { rates: { [base]: 1, ...data.rates }, ts: Date.now() };
+      } catch (err) {
+        clearTimeout(timeout);
+        if (err.name === 'AbortError') throw new Error('TIMEOUT');
+        throw err;
+      } finally {
+        controller = null;
+      }
+    }
+
+    /* ─── Get Rates (cache + fetch) ─────────────────────────────── */
+    async function getRates(base) {
+      // 1. Try memory cache
+      if (rates && lastFetched && Date.now() - lastFetched < CACHE_TTL) {
+        // If same base currency, reuse
+        const baseRate = rates[base];
+        if (baseRate !== undefined) {
+          isFromCache = false;
+          return rates;
+        }
+      }
+
+      // 2. Try localStorage cache
+      const cached = readCache(base);
+      if (cached) {
+        rates = cached;
+        lastFetched = Date.now(); // treat as fresh enough
+        isFromCache = true;
+        updateCacheUI(true);
+        return rates;
+      }
+
+      // 3. Fetch fresh
+      isFromCache = false;
+      updateCacheUI(false);
+      const result = await fetchRates(base);
+      rates = result.rates;
+      lastFetched = Date.now();
+      writeCache(base, rates);
+      return rates;
+    }
+
+    /* ─── Update UI ─────────────────────────────────────────────── */
+    function updateCacheUI(fromCache) {
+      if (fromCache) {
+        cacheInfo.classList.add('is-cached');
+        cacheText.textContent = '缓存数据';
+      } else {
+        cacheInfo.classList.remove('is-cached');
+        cacheText.textContent = 'frankfurter.app';
+      }
+    }
+
+    function updateStatus(msg, type) {
+      // Remove old type classes
+      statusBar.querySelectorAll('.status-bar__msg').forEach(el => el.remove());
+      if (!msg) return;
+
+      // Extract leading icon if present
+      const iconMatch = msg.match(/^([^\w]+)\s*(.*)/);
+      let icon = '';
+      let text = msg;
+      if (iconMatch && !/^[a-z]/i.test(iconMatch[1])) {
+        icon = iconMatch[1];
+        text = iconMatch[2];
+      }
+
+      const badge = document.createElement('span');
+      badge.className = `status-bar__msg status-bar__msg--${type || 'info'}`;
+      badge.textContent = `${icon} ${text}`.trim();
+      statusText.parentElement.insertBefore(badge, statusText.nextSibling);
+    }
+
+    function showSkeletons(count = 10) {
+      resultsGrid.innerHTML = '';
+      for (let i = 0; i < count; i++) {
+        const sk = document.createElement('div');
+        sk.className = 'card-skeleton';
+        sk.setAttribute('aria-hidden', 'true');
+        sk.innerHTML = `
+          <div class="sk-line sk-line--sm"></div>
+          <div class="sk-line sk-line--lg" style="margin-top:12px"></div>
+          <div class="sk-line sk-line--md"></div>
+        `;
+        resultsGrid.appendChild(sk);
+      }
+    }
+
+    function renderCards(amount, ratesObj, precision) {
+      resultsGrid.innerHTML = '';
+      const base = baseCurrency;
+
+      // Amount in base currency
+      const baseNum = parseFloat(currentAmount);
+
+      Object.keys(CURRENCIES).forEach((code, i) => {
+        const info = CURRENCIES[code];
+        const card = document.createElement('div');
+        card.className = 'card' + (code === base ? ' is-base' : '');
+        card.setAttribute('role', 'listitem');
+        card.setAttribute('aria-label', `${info.name} ${code}`);
+
+        let convertedAmount;
+        if (code === base) {
+          convertedAmount = baseNum;
+        } else {
+          const baseRate = ratesObj[base]; //e.g. USD rate against base
+          const targetRate = ratesObj[code];
+          if (!baseRate || !targetRate) {
+            convertedAmount = null;
+          } else {
+            // Convert: amount_in_base * (targetRate / baseRate)
+            convertedAmount = baseNum * (targetRate / baseRate);
+          }
+        }
+
+        const decimals = precision;
+        const displayAmount = formatNumber(convertedAmount, decimals);
+
+        // Rate info
+        const rateInfo = (code !== base && ratesObj[base] && ratesObj[code])
+          ? `1 ${base} = ${formatNumber(ratesObj[code] / ratesObj[base], 4)} ${code}`
+          : (code === base ? `基准货币` : '');
+
+        card.innerHTML = `
+          <div class="card__symbol">${info.symbol}</div>
+          <div class="card__amount">${displayAmount}</div>
+          <div class="card__code">${info.code}</div>
+          <div class="card__name">${info.name}</div>
+          ${rateInfo ? `<div class="card__rate">${rateInfo}</div>` : ''}
+        `;
+
+        resultsGrid.appendChild(card);
+
+        // Staggered reveal
+        setTimeout(() => card.classList.add('visible'), 30 + i * 45);
+      });
+    }
+
+    function setInputError(msg) {
+      if (msg) {
+        inputError.textContent = msg;
+        amountInput.classList.add('has-error');
+      } else {
+        inputError.textContent = '';
+        amountInput.classList.remove('has-error');
+      }
+    }
+
+    /* ─── Main Handler ───────────────────────────────────────────── */
+    async function handleInput() {
+      const raw = amountInput.value;
+      currentAmount = parseAmount(raw);
+      amountInput.value = currentAmount; // show sanitized
+
+      const validation = validateAmount(currentAmount);
+
+      if (currentAmount === '' || currentAmount === '.') {
+        setInputError('');
+        // Reset to empty state
+        resultsGrid.innerHTML = `
+          <div class="empty-state">
+            <div class="empty-state__icon">💱</div>
+            <p class="empty-state__title">输入金额，开启汇率换算</p>
+            <p class="empty-state__desc">支持的货币：USD EUR GBP JPY CNY HKD KRW SGD AUD CAD</p>
+          </div>`;
+        updateStatus('', '');
+        return;
+      }
+
+      if (!validation.ok) {
+        setInputError(validation.msg);
+        return;
+      }
+
+      setInputError('');
+      showSkeletons();
+      updateStatus('正在获取汇率...', '');
+
+      try {
+        const ratesObj = await getRates(baseCurrency);
+        renderCards(currentAmount, ratesObj, precision);
+
+        if (isFromCache) {
+          const time = new Date(lastFetched).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
+          updateStatus(`当前数据来自缓存（更新时间：${time}）`, 'cached');
+        } else {
+          updateStatus('', '');
+        }
+      } catch (err) {
+        // Show cached fallback
+        const fallback = readCache(baseCurrency);
+        if (fallback) {
+          renderCards(currentAmount, fallback, precision);
+          const time = new Date(lastFetched || Date.now()).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
+          updateStatus(`汇率获取失败，数据来自缓存（更新时间：${time}）`, 'warn');
+        } else {
+          resultsGrid.innerHTML = `
+            <div class="empty-state">
+              <div class="empty-state__icon">⚠️</div>
+              <p class="empty-state__title">汇率获取失败</p>
+              <p class="empty-state__desc">${err.message === 'TIMEOUT' ? '请求超时，请稍后重试' : '网络异常，请检查网络连接'}</p>
+            </div>`;
+          updateStatus('汇率获取失败，请稍后重试', 'error');
+        }
+      }
+    }
+
+    function debouncedHandleInput() {
+      clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(handleInput, DEBOUNCE_MS);
+    }
+
+    /* ─── Event Listeners ─────────────────────────────────────────── */
+    amountInput.addEventListener('input', debouncedHandleInput);
+
+    baseCurrencySel.addEventListener('change', (e) => {
+      baseCurrency = e.target.value;
+      // Update prefix symbol
+      baseCurrencyPrefix.textContent = CURRENCIES[baseCurrency].symbol;
+      if (currentAmount) handleInput();
+    });
+
+    toggleBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        toggleBtns.forEach(b => {
+          b.classList.remove('active');
+          b.setAttribute('aria-pressed', 'false');
+        });
+        btn.classList.add('active');
+        btn.setAttribute('aria-pressed', 'true');
+        precision = parseInt(btn.dataset.precision);
+        if (currentAmount) handleInput();
+      });
+    });
+
+    // ── Weekend/Holiday Notice ────────────────────────────────────
+    function checkMarketStatus() {
+      const now = new Date();
+      const day = now.getDay(); // 0=Sun, 6=Sat
+      if (day === 0 || day === 6) {
+        updateStatus('周末非交易日，数据可能延迟', 'warn');
+      }
+    }
+
+    // Initialize
+    checkMarketStatus();
+  </script>
+</body>
+</html>
