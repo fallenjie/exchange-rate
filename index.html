@@ -110,6 +110,12 @@
       background: var(--green);
       animation: pulse-dot 1.5s ease infinite;
     }
+    .header__currencies {
+      margin-top: 10px;
+      font-size: 12px;
+      color: var(--text-mid);
+      font-weight: 500;
+    }
 
     /* ─── App Container ──────────────────────────────────────────── */
     .app {
@@ -480,11 +486,13 @@
     </div>
     <h1 class="header__title">货币换算</h1>
     <p class="header__subtitle">
-      支持 <strong>10</strong> 种主流货币 &nbsp;·&nbsp;
       <span class="header__live">
         <span class="header__live-dot"></span>
         数据来源 frankfurter.app
       </span>
+    </p>
+    <p class="header__currencies">
+      💰 支持换算：USD · EUR · GBP · JPY · CNY · HKD · KRW · SGD · AUD · CAD
     </p>
   </header>
 
@@ -517,8 +525,9 @@
 
       <!-- Base Currency -->
       <div class="ctrl">
-        <label class="ctrl__label" for="baseCurrency">基准货币</label>
-        <select class="select" id="baseCurrency" aria-label="选择基准货币">
+        <label class="ctrl__label" for="baseCurrency">我有</label>
+        <span class="input-hint" style="font-size:10px; color:var(--text-lo); padding-top:2px;">输入金额所属的货币</span>
+        <select class="select" id="baseCurrency" aria-label="选择我有哪种货币">
           <option value="USD">🇺🇸 USD — 美元</option>
           <option value="EUR">🇪🇺 EUR — 欧元</option>
           <option value="GBP">🇬🇧 GBP — 英镑</option>
@@ -558,7 +567,7 @@
       <div class="empty-state" aria-label="等待输入">
         <div class="empty-state__icon">💱</div>
         <p class="empty-state__title">输入金额，开启汇率换算</p>
-        <p class="empty-state__desc">支持的货币：USD EUR GBP JPY CNY HKD KRW SGD AUD CAD</p>
+        <p class="empty-state__desc">输入金额后自动换算 10 种货币</p>
       </div>
     </div>
 
@@ -844,7 +853,7 @@
           <div class="empty-state">
             <div class="empty-state__icon">💱</div>
             <p class="empty-state__title">输入金额，开启汇率换算</p>
-            <p class="empty-state__desc">支持的货币：USD EUR GBP JPY CNY HKD KRW SGD AUD CAD</p>
+            <p class="empty-state__desc">输入金额后自动换算 10 种货币</p>
           </div>`;
         updateStatus('', '');
         return;
