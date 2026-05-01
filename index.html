@@ -60,7 +60,7 @@
       margin-bottom: 48px;
       animation: fadeDown 0.6s ease both;
       width: 100%;
-      max-width: 500px;
+      max-width: 600px;
     }
     .header__eyebrow {
       display: inline-flex;
@@ -120,32 +120,39 @@
     /* ─── App Container ──────────────────────────────────────────── */
     .app {
       width: 100%;
-      max-width: 500px;
+      max-width: 600px;
       display: flex;
       flex-direction: column;
       gap: 20px;
     }
 
-    /* ─── Controls Row ───────────────────────────────────────────── */
-    .controls {
+    /* ─── Source Section (Bank Exchange Style) ───────────────────── */
+    .source-section {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px;
       display: flex;
-      flex-wrap: wrap;
-      gap: 14px;
+      gap: 16px;
       align-items: flex-end;
       animation: fadeDown 0.6s 0.1s ease both;
+      box-shadow: var(--shadow-card);
     }
-    .ctrl {
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
+    .source-section__label {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text-mid);
+      margin-bottom: 8px;
     }
-    .ctrl--grow { flex: 1; min-width: 200px; }
-    .ctrl__label {
-      font-size: 11px;
+    .source-section__label-accent {
+      color: var(--accent);
       font-weight: 600;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      color: var(--text-lo);
+    }
+    .source-section__currency {
+      flex: 0 0 180px;
+    }
+    .source-section__amount {
+      flex: 1;
     }
 
     /* ─── Input ──────────────────────────────────────────────────── */
@@ -191,12 +198,13 @@
       font-size: 11px;
       color: var(--text-lo);
       padding-left: 2px;
+      margin-top: 6px;
     }
 
     /* ─── Select ─────────────────────────────────────────────────── */
     .select {
       height: 60px;
-      min-width: 160px;
+      width: 100%;
       background: var(--bg-input);
       border: 1.5px solid var(--border);
       border-radius: var(--radius);
@@ -312,11 +320,11 @@
       animation: fadeIn 0.2s ease;
     }
 
-    /* ─── Grid ───────────────────────────────────────────────────── */
-    .results-grid {
+    /* ─── Cards Grid ─────────────────────────────────────────────── */
+    .cards-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(145px, 1fr));
-      gap: 12px;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
       animation: fadeDown 0.6s 0.2s ease both;
     }
 
@@ -326,7 +334,7 @@
       border: 1px solid var(--border);
       border-radius: var(--radius);
       padding: 20px;
-      height: 100px;
+      height: 140px;
       overflow: hidden;
       position: relative;
     }
@@ -352,10 +360,10 @@
       background: var(--bg-card);
       border: 1px solid var(--border);
       border-radius: var(--radius);
-      padding: 18px;
+      padding: 20px;
       display: flex;
       flex-direction: column;
-      gap: 6px;
+      gap: 8px;
       position: relative;
       overflow: hidden;
       transition: var(--transition);
@@ -372,25 +380,45 @@
       transform: translateY(-2px);
       box-shadow: var(--shadow-card), 0 4px 16px rgba(0, 0, 0, 0.08);
     }
-    .card.is-base {
-      border-color: var(--accent);
-      box-shadow: 0 0 0 1px var(--accent), var(--shadow-card);
+    .card__header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
     }
     .card__symbol {
-      font-size: 22px;
+      font-size: 24px;
       line-height: 1;
       color: var(--accent);
       font-weight: 700;
       font-family: var(--font-mono);
     }
+    .card__selector {
+      flex: 0 0 auto;
+    }
+    .card__selector .select {
+      height: 32px;
+      min-width: 90px;
+      font-size: 12px;
+      font-weight: 600;
+      padding: 0 28px 0 10px;
+      border-radius: var(--radius-sm);
+      background-position: right 8px center;
+      border-color: var(--border);
+    }
     .card__amount {
-      font-size: 22px;
+      font-size: 26px;
       font-weight: 700;
       font-family: var(--font-mono);
       color: var(--text-hi);
       line-height: 1.2;
       letter-spacing: -0.01em;
       word-break: break-all;
+    }
+    .card__info {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
     }
     .card__code {
       font-size: 12px;
@@ -404,10 +432,10 @@
       color: var(--text-lo);
     }
     .card__rate {
-      margin-top: 4px;
       font-size: 10px;
       color: var(--text-lo);
       font-family: var(--font-mono);
+      margin-top: 4px;
     }
 
     /* ─── Empty State ────────────────────────────────────────────── */
@@ -468,11 +496,22 @@
     @media (max-width: 640px) {
       body { padding: 32px 16px 60px; }
       .header { margin-bottom: 36px; }
-      .results-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
+      .source-section {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 12px;
+      }
+      .source-section__currency {
+        flex: none;
+      }
+      .cards-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+      }
       .input, .select { height: 54px; }
     }
     @media (max-width: 400px) {
-      .results-grid { grid-template-columns: 1fr; }
+      .cards-grid { grid-template-columns: 1fr; }
     }
   </style>
 </head>
@@ -499,11 +538,26 @@
   <!-- ─── App ─────────────────────────────────────────────────── -->
   <main class="app" role="main" aria-label="汇率换算">
 
-    <!-- Controls -->
-    <div class="controls" role="group" aria-label="输入与设置">
-
-      <!-- Amount Input -->
-      <div class="ctrl ctrl--grow">
+    <!-- Source Section (Bank Exchange Style) -->
+    <section class="source-section" aria-label="源货币与金额">
+      <div class="source-section__currency">
+        <div class="source-section__label">
+          要用 <span class="source-section__label-accent" id="sourceLabel">USD</span> 兑换
+        </div>
+        <select class="select" id="baseCurrency" aria-label="选择源货币">
+          <option value="USD" selected>🇺🇸 USD — 美元</option>
+          <option value="EUR">🇪🇺 EUR — 欧元</option>
+          <option value="GBP">🇬🇧 GBP — 英镑</option>
+          <option value="JPY">🇯🇵 JPY — 日元</option>
+          <option value="CNY">🇨🇳 CNY — 人民币</option>
+          <option value="HKD">🇭🇰 HKD — 港币</option>
+          <option value="KRW">🇰🇷 KRW — 韩元</option>
+          <option value="SGD">🇸🇬 SGD — 新加坡元</option>
+          <option value="AUD">🇦🇺 AUD — 澳元</option>
+          <option value="CAD">🇨🇦 CAD — 加元</option>
+        </select>
+      </div>
+      <div class="source-section__amount">
         <label class="ctrl__label" for="amountInput">金额</label>
         <div class="input-wrap">
           <span class="input-wrap__prefix" id="baseCurrencyPrefix">$</span>
@@ -522,28 +576,12 @@
         <span class="input-hint" id="inputHint">支持最多2位小数</span>
         <span class="error-hint" id="inputError" role="alert" aria-live="polite"></span>
       </div>
+    </section>
 
-      <!-- Base Currency -->
-      <div class="ctrl">
-        <label class="ctrl__label" for="baseCurrency">我有</label>
-        <span class="input-hint" style="font-size:10px; color:var(--text-lo); padding-top:2px;">输入金额所属的货币</span>
-        <select class="select" id="baseCurrency" aria-label="选择我有哪种货币">
-          <option value="USD">🇺🇸 USD — 美元</option>
-          <option value="EUR">🇪🇺 EUR — 欧元</option>
-          <option value="GBP">🇬🇧 GBP — 英镑</option>
-          <option value="JPY">🇯🇵 JPY — 日元</option>
-          <option value="CNY">🇨🇳 CNY — 人民币</option>
-          <option value="HKD">🇭🇰 HKD — 港币</option>
-          <option value="KRW">🇰🇷 KRW — 韩元</option>
-          <option value="SGD">🇸🇬 SGD — 新加坡元</option>
-          <option value="AUD">🇦🇺 AUD — 澳元</option>
-          <option value="CAD">🇨🇦 CAD — 加元</option>
-        </select>
-      </div>
-
-      <!-- Precision -->
-      <div class="ctrl">
-        <span class="ctrl__label">小数位数</span>
+    <!-- Precision Toggle -->
+    <div style="display: flex; justify-content: flex-end; animation: fadeDown 0.6s 0.12s ease both;">
+      <div class="ctrl" style="flex-direction: row; align-items: center; gap: 8px;">
+        <span class="ctrl__label" style="margin-bottom: 0;">小数位数</span>
         <div class="toggle-pill" role="group" aria-label="小数位数选择">
           <button class="toggle-pill__btn active" data-precision="2" aria-pressed="true">2位</button>
           <button class="toggle-pill__btn" data-precision="4" aria-pressed="false">4位</button>
@@ -562,12 +600,12 @@
       </div>
     </div>
 
-    <!-- Results -->
-    <div class="results-grid" id="resultsGrid" role="list" aria-label="换算结果">
+    <!-- Results Cards Grid -->
+    <div class="cards-grid" id="resultsGrid" role="list" aria-label="换算结果">
       <div class="empty-state" aria-label="等待输入">
         <div class="empty-state__icon">💱</div>
         <p class="empty-state__title">输入金额，开启汇率换算</p>
-        <p class="empty-state__desc">输入金额后自动换算 10 种货币</p>
+        <p class="empty-state__desc">选择目标货币查看换算结果</p>
       </div>
     </div>
 
@@ -600,6 +638,7 @@
     const CACHE_TTL   = 10 * 60 * 1000; // 10 minutes
     const API_TIMEOUT = 5000;
     const DEBOUNCE_MS = 300;
+    const DEFAULT_TARGETS = ['EUR', 'GBP', 'JPY', 'CNY', 'HKD'];
 
     /* ─── State ─────────────────────────────────────────────────── */
     let rates      = null;       // { USD: 1, EUR: 0.91, ... }
@@ -610,11 +649,13 @@
     let debounceTimer = null;
     let currentAmount = '';
     let controller = null;       // AbortController for fetch
+    let targetCurrencies = [...DEFAULT_TARGETS];
 
     /* ─── Elements ─────────────────────────────────────────────── */
     const amountInput      = document.getElementById('amountInput');
     const baseCurrencySel  = document.getElementById('baseCurrency');
     const baseCurrencyPrefix = document.getElementById('baseCurrencyPrefix');
+    const sourceLabel = document.getElementById('sourceLabel');
     const resultsGrid      = document.getElementById('resultsGrid');
     const statusBar        = document.getElementById('statusBar');
     const statusText        = document.getElementById('statusText');
@@ -762,7 +803,17 @@
       statusText.parentElement.insertBefore(badge, statusText.nextSibling);
     }
 
-    function showSkeletons(count = 10) {
+    function buildCurrencyOptions(selectedCode, excludeCode) {
+      return Object.keys(CURRENCIES)
+        .filter(code => code !== excludeCode)
+        .map(code => {
+          const info = CURRENCIES[code];
+          const selected = code === selectedCode ? 'selected' : '';
+          return `<option value="${code}" ${selected}>${info.symbol} ${code}</option>`;
+        }).join('');
+    }
+
+    function showSkeletons(count = 5) {
       resultsGrid.innerHTML = '';
       for (let i = 0; i < count; i++) {
         const sk = document.createElement('div');
@@ -780,14 +831,12 @@
     function renderCards(amount, ratesObj, precision) {
       resultsGrid.innerHTML = '';
       const base = baseCurrency;
-
-      // Amount in base currency
       const baseNum = parseFloat(currentAmount);
 
-      Object.keys(CURRENCIES).forEach((code, i) => {
+      targetCurrencies.forEach((code, i) => {
         const info = CURRENCIES[code];
         const card = document.createElement('div');
-        card.className = 'card' + (code === base ? ' is-base' : '');
+        card.className = 'card';
         card.setAttribute('role', 'listitem');
         card.setAttribute('aria-label', `${info.name} ${code}`);
 
@@ -795,12 +844,11 @@
         if (code === base) {
           convertedAmount = baseNum;
         } else {
-          const baseRate = ratesObj[base]; //e.g. USD rate against base
+          const baseRate = ratesObj[base];
           const targetRate = ratesObj[code];
           if (!baseRate || !targetRate) {
             convertedAmount = null;
           } else {
-            // Convert: amount_in_base * (targetRate / baseRate)
             convertedAmount = baseNum * (targetRate / baseRate);
           }
         }
@@ -808,16 +856,24 @@
         const decimals = (code === 'JPY' || code === 'CNY') ? 3 : precision;
         const displayAmount = formatNumber(convertedAmount, decimals);
 
-        // Rate info
         const rateInfo = (code !== base && ratesObj[base] && ratesObj[code])
           ? `1 ${base} = ${formatNumber(ratesObj[code] / ratesObj[base], 4)} ${code}`
           : (code === base ? `基准货币` : '');
 
         card.innerHTML = `
-          <div class="card__symbol">${info.symbol}</div>
+          <div class="card__header">
+            <div class="card__symbol">${info.symbol}</div>
+            <div class="card__selector">
+              <select class="select" data-card-index="${i}" aria-label="选择目标货币">
+                ${buildCurrencyOptions(code, base)}
+              </select>
+            </div>
+          </div>
           <div class="card__amount">${displayAmount}</div>
-          <div class="card__code">${info.code}</div>
-          <div class="card__name">${info.name}</div>
+          <div class="card__info">
+            <div class="card__code">${info.code}</div>
+            <div class="card__name">${info.name}</div>
+          </div>
           ${rateInfo ? `<div class="card__rate">${rateInfo}</div>` : ''}
         `;
 
@@ -825,6 +881,15 @@
 
         // Staggered reveal
         setTimeout(() => card.classList.add('visible'), 30 + i * 45);
+      });
+
+      // Add event listeners to card selectors
+      resultsGrid.querySelectorAll('.card .select').forEach(sel => {
+        sel.addEventListener('change', (e) => {
+          const cardIndex = parseInt(e.target.dataset.cardIndex);
+          targetCurrencies[cardIndex] = e.target.value;
+          if (currentAmount) handleInput();
+        });
       });
     }
 
@@ -853,7 +918,7 @@
           <div class="empty-state">
             <div class="empty-state__icon">💱</div>
             <p class="empty-state__title">输入金额，开启汇率换算</p>
-            <p class="empty-state__desc">输入金额后自动换算 10 种货币</p>
+            <p class="empty-state__desc">选择目标货币查看换算结果</p>
           </div>`;
         updateStatus('', '');
         return;
@@ -907,8 +972,8 @@
 
     baseCurrencySel.addEventListener('change', (e) => {
       baseCurrency = e.target.value;
-      // Update prefix symbol
       baseCurrencyPrefix.textContent = CURRENCIES[baseCurrency].symbol;
+      sourceLabel.textContent = baseCurrency;
       if (currentAmount) handleInput();
     });
 
