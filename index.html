@@ -338,9 +338,9 @@
 
     /* ─── Cards Grid ─────────────────────────────────────────────── */
     .cards-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
       animation: fadeDown 0.6s 0.2s ease both;
     }
 
@@ -376,10 +376,11 @@
       background: var(--bg-card);
       border: 1px solid var(--border);
       border-radius: var(--radius);
-      padding: 20px;
+      padding: 18px 20px;
       display: flex;
-      flex-direction: column;
-      gap: 8px;
+      flex-direction: row;
+      align-items: center;
+      gap: 16px;
       position: relative;
       overflow: hidden;
       transition: var(--transition);
@@ -396,62 +397,66 @@
       transform: translateY(-2px);
       box-shadow: var(--shadow-card), 0 4px 16px rgba(0, 0, 0, 0.08);
     }
-    .card__header {
+
+    /* Left: symbol + name */
+    .card__left {
       display: flex;
+      flex-direction: column;
       align-items: center;
-      justify-content: space-between;
-      gap: 8px;
+      gap: 2px;
+      min-width: 60px;
+      flex: 0 0 auto;
     }
     .card__symbol {
-      font-size: 24px;
+      font-size: 26px;
       line-height: 1;
       color: var(--accent);
       font-weight: 700;
       font-family: var(--font-mono);
     }
-    .card__selector {
-      flex: 0 0 auto;
+    .card__name {
+      font-size: 11px;
+      color: var(--text-lo);
+      text-align: center;
     }
-    .card__selector .select {
-      height: 32px;
-      min-width: 90px;
-      font-size: 12px;
-      font-weight: 600;
-      padding: 0 28px 0 10px;
-      border-radius: var(--radius-sm);
-      background-position: right 8px center;
-      border-color: var(--border);
+
+    /* Center: amount */
+    .card__center {
+      flex: 1;
+      min-width: 0;
     }
     .card__amount {
-      font-size: 26px;
+      font-size: 30px;
       font-weight: 700;
       font-family: var(--font-mono);
       color: var(--text-hi);
-      line-height: 1.2;
-      letter-spacing: -0.01em;
+      line-height: 1.1;
+      letter-spacing: -0.02em;
       word-break: break-all;
-    }
-    .card__info {
-      display: flex;
-      flex-direction: column;
-      gap: 2px;
-    }
-    .card__code {
-      font-size: 12px;
-      font-weight: 600;
-      letter-spacing: 0.08em;
-      color: var(--text-mid);
-      text-transform: uppercase;
-    }
-    .card__name {
-      font-size: 12px;
-      color: var(--text-lo);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
     .card__rate {
       font-size: 10px;
       color: var(--text-lo);
       font-family: var(--font-mono);
-      margin-top: 4px;
+      margin-top: 3px;
+    }
+
+    /* Right: selector */
+    .card__selector {
+      flex: 0 0 auto;
+    }
+    .card__selector .select {
+      height: 34px;
+      min-width: 100px;
+      font-size: 12px;
+      font-weight: 600;
+      padding: 0 30px 0 10px;
+      border-radius: var(--radius-sm);
+      background-position: right 8px center;
+      border-color: var(--border);
     }
 
     /* ─── Empty State ────────────────────────────────────────────── */
@@ -520,14 +525,15 @@
       .source-section__currency {
         flex: none;
       }
-      .cards-grid {
-        grid-template-columns: 1fr 1fr;
+      .input, .select { height: 54px; }
+      .card {
+        padding: 14px 16px;
         gap: 12px;
       }
-      .input, .select { height: 54px; }
-    }
-    @media (max-width: 400px) {
-      .cards-grid { grid-template-columns: 1fr; }
+      .card__symbol { font-size: 22px; }
+      .card__amount { font-size: 26px; }
+      .card__left { min-width: 52px; }
+      .card__selector .select { min-width: 88px; }
     }
   </style>
 </head>
@@ -876,20 +882,19 @@
           : (code === base ? `基准货币` : '');
 
         card.innerHTML = `
-          <div class="card__header">
+          <div class="card__left">
             <div class="card__symbol">${info.symbol}</div>
-            <div class="card__selector">
-              <select class="select" data-card-index="${i}" aria-label="选择目标货币">
-                ${buildCurrencyOptions(code, base)}
-              </select>
-            </div>
-          </div>
-          <div class="card__amount">${displayAmount}</div>
-          <div class="card__info">
-            <div class="card__code">${info.code}</div>
             <div class="card__name">${info.name}</div>
           </div>
-          ${rateInfo ? `<div class="card__rate">${rateInfo}</div>` : ''}
+          <div class="card__center">
+            <div class="card__amount">${displayAmount}</div>
+            ${rateInfo ? `<div class="card__rate">${rateInfo}</div>` : ''}
+          </div>
+          <div class="card__selector">
+            <select class="select" data-card-index="${i}" aria-label="选择目标货币">
+              ${buildCurrencyOptions(code, base)}
+            </select>
+          </div>
         `;
 
         resultsGrid.appendChild(card);
