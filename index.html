@@ -137,6 +137,7 @@
       align-items: flex-end;
       animation: fadeDown 0.6s 0.1s ease both;
       box-shadow: var(--shadow-card);
+      position: relative;
     }
     .source-section__label {
       font-size: 14px;
@@ -153,6 +154,25 @@
     }
     .source-section__amount {
       flex: 1;
+    }
+    .source-section__empty-hint {
+      display: none;
+      position: absolute;
+      left: 50%;
+      bottom: 100%;
+      transform: translateX(-50%);
+      margin-bottom: 8px;
+      padding: 6px 12px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 13px;
+      color: var(--text-lo);
+      white-space: nowrap;
+      box-shadow: var(--shadow-card);
+    }
+    .source-section__empty-hint.is-visible {
+      display: block;
     }
 
     /* ─── Input ──────────────────────────────────────────────────── */
@@ -585,6 +605,7 @@
           </div>
         </div>
       </div>
+      <div class="source-section__empty-hint" id="sourceEmptyHint">输入金额开始计算</div>
     </section>
 
     <!-- Status Bar -->
@@ -919,6 +940,7 @@
             <p class="empty-state__desc">选择目标货币查看换算结果</p>
           </div>`;
         updateStatus('', '');
+        document.getElementById('sourceEmptyHint').classList.add('is-visible');
         return;
       }
 
@@ -928,6 +950,7 @@
       }
 
       setInputError('');
+      document.getElementById('sourceEmptyHint').classList.remove('is-visible');
       showSkeletons();
       updateStatus('正在获取汇率...', '');
 
