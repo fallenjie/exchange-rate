@@ -815,7 +815,7 @@
           }
         }
 
-        const decimals = (code === 'JPY' || code === 'KRW') ? 3 : precision;
+        const decimals = (code === 'JPY' || code === 'CNY') ? 3 : precision;
         const displayAmount = formatNumber(convertedAmount, decimals);
 
         // Rate info
