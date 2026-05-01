@@ -7,31 +7,29 @@
   <meta name="description" content="实时汇率换算工具，支持10种主流货币" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
   <style>
     /* ─── Design Tokens ─────────────────────────────────────────── */
     :root {
-      --bg-base:     #0a0e14;
-      --bg-card:     #131b27;
-      --bg-input:    #0f1520;
-      --bg-hover:    #1a2436;
-      --border:      rgba(240, 165, 0, 0.12);
-      --border-hi:   rgba(240, 165, 0, 0.35);
-      --accent:      #f0a500;
-      --accent-dim:  rgba(240, 165, 0, 0.15);
-      --accent-glow: rgba(240, 165, 0, 0.25);
-      --text-hi:     #f0f4ff;
-      --text-mid:    #8899bb;
-      --text-lo:     #4a5a7a;
-      --red:         #ff5c5c;
-      --green:       #3ecf8e;
-      --radius:      14px;
-      --radius-sm:   8px;
-      --shadow-card: 0 4px 32px rgba(0,0,0,0.55), 0 1px 0 rgba(255,255,255,0.04) inset;
-      --shadow-glow: 0 0 40px rgba(240,165,0,0.12);
-      --font-sans:   'DM Sans', system-ui, sans-serif;
-      --font-mono:   'DM Mono', 'Fira Code', monospace;
-      --transition:  all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      --bg-base:      #F7F8FA;
+      --bg-card:      #FFFFFF;
+      --bg-input:     #FFFFFF;
+      --border:       #E8E8E8;
+      --border-hi:    #007AFF;
+      --accent:       #007AFF;
+      --accent-dim:   rgba(0, 122, 255, 0.1);
+      --accent-glow:  rgba(0, 122, 255, 0.2);
+      --text-hi:      #1a1a1a;
+      --text-mid:     #666666;
+      --text-lo:      #999999;
+      --green:        #34C759;
+      --red:          #FF3B30;
+      --radius:       18px;
+      --radius-sm:    10px;
+      --shadow-card:  0 2px 12px rgba(0, 0, 0, 0.07);
+      --font-sans:     'DM Sans', 'Space Grotesk', system-ui, sans-serif;
+      --font-mono:     'DM Mono', 'Fira Code', monospace;
+      --transition:    all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
     /* ─── Reset ─────────────────────────────────────────────────── */
@@ -40,10 +38,6 @@
     body {
       font-family: var(--font-sans);
       background-color: var(--bg-base);
-      background-image:
-        radial-gradient(ellipse 80% 50% at 50% -10%, rgba(240,165,0,0.07) 0%, transparent 70%),
-        repeating-linear-gradient(0deg, transparent, transparent 79px, rgba(255,255,255,0.018) 79px, rgba(255,255,255,0.018) 80px),
-        repeating-linear-gradient(90deg, transparent, transparent 79px, rgba(255,255,255,0.018) 79px, rgba(255,255,255,0.018) 80px);
       color: var(--text-hi);
       min-height: 100vh;
       display: flex;
@@ -54,7 +48,7 @@
     }
 
     /* ─── Selection & Scrollbar ─────────────────────────────────── */
-    ::selection { background: var(--accent); color: #0a0e14; }
+    ::selection { background: var(--accent); color: #fff; }
     ::-webkit-scrollbar { width: 6px; }
     ::-webkit-scrollbar-track { background: var(--bg-base); }
     ::-webkit-scrollbar-thumb { background: var(--text-lo); border-radius: 3px; }
@@ -65,6 +59,8 @@
       text-align: center;
       margin-bottom: 48px;
       animation: fadeDown 0.6s ease both;
+      width: 100%;
+      max-width: 500px;
     }
     .header__eyebrow {
       display: inline-flex;
@@ -88,14 +84,11 @@
       animation: pulse-dot 2s ease infinite;
     }
     .header__title {
-      font-size: clamp(2rem, 5vw, 3.2rem);
+      font-size: clamp(2rem, 5vw, 2.6rem);
       font-weight: 700;
       line-height: 1.15;
       letter-spacing: -0.03em;
-      background: linear-gradient(135deg, #fff 0%, var(--accent) 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
+      color: var(--text-hi);
       margin-bottom: 10px;
     }
     .header__subtitle {
@@ -121,10 +114,10 @@
     /* ─── App Container ──────────────────────────────────────────── */
     .app {
       width: 100%;
-      max-width: 880px;
+      max-width: 500px;
       display: flex;
       flex-direction: column;
-      gap: 28px;
+      gap: 20px;
     }
 
     /* ─── Controls Row ───────────────────────────────────────────── */
@@ -181,14 +174,13 @@
       letter-spacing: 0.02em;
     }
     .input::placeholder { color: var(--text-lo); font-family: var(--font-sans); font-size: 15px; }
-    .input:hover { border-color: var(--border-hi); background: var(--bg-hover); }
+    .input:hover { border-color: #d0d0d0; }
     .input:focus {
       border-color: var(--accent);
-      background: var(--bg-hover);
-      box-shadow: 0 0 0 3px var(--accent-glow), var(--shadow-card);
+      box-shadow: 0 0 0 3px var(--accent-glow);
     }
     .input.has-error { border-color: var(--red); }
-    .input.has-error:focus { box-shadow: 0 0 0 3px rgba(255,92,92,0.2); }
+    .input.has-error:focus { box-shadow: 0 0 0 3px rgba(255, 59, 48, 0.2); }
     .input-hint {
       font-size: 11px;
       color: var(--text-lo);
@@ -212,12 +204,12 @@
       appearance: none;
       -webkit-appearance: none;
       transition: var(--transition);
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' viewBox='0 0 24 24'%3E%3Cpath stroke='%238899bb' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' viewBox='0 0 24 24'%3E%3Cpath stroke='%23666666' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
       background-repeat: no-repeat;
       background-position: right 14px center;
     }
-    .select:hover { border-color: var(--border-hi); background-color: var(--bg-hover); }
-    .select:focus { border-color: var(--accent); background-color: var(--bg-hover); box-shadow: 0 0 0 3px var(--accent-glow); }
+    .select:hover { border-color: #d0d0d0; }
+    .select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-glow); }
     .select option { background: var(--bg-card); color: var(--text-hi); }
 
     /* ─── Toggle Pill ────────────────────────────────────────────── */
@@ -246,9 +238,9 @@
     }
     .toggle-pill__btn.active {
       background: var(--accent);
-      color: #0a0e14;
+      color: #fff;
     }
-    .toggle-pill__btn:not(.active):hover { color: var(--text-hi); background: rgba(255,255,255,0.05); }
+    .toggle-pill__btn:not(.active):hover { color: var(--text-mid); background: rgba(0, 0, 0, 0.04); }
 
     /* ─── Status Bar ─────────────────────────────────────────────── */
     .status-bar {
@@ -290,13 +282,13 @@
       font-weight: 500;
     }
     .status-bar__msg--warn {
-      background: rgba(255,200,0,0.1);
-      border: 1px solid rgba(255,200,0,0.25);
-      color: #ffc800;
+      background: rgba(255, 200, 0, 0.1);
+      border: 1px solid rgba(255, 200, 0, 0.25);
+      color: #b37400;
     }
     .status-bar__msg--error {
-      background: rgba(255,92,92,0.1);
-      border: 1px solid rgba(255,92,92,0.25);
+      background: rgba(255, 59, 48, 0.1);
+      border: 1px solid rgba(255, 59, 48, 0.25);
       color: var(--red);
     }
     .status-bar__msg--cached {
@@ -317,8 +309,8 @@
     /* ─── Grid ───────────────────────────────────────────────────── */
     .results-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-      gap: 14px;
+      grid-template-columns: repeat(auto-fill, minmax(145px, 1fr));
+      gap: 12px;
       animation: fadeDown 0.6s 0.2s ease both;
     }
 
@@ -336,13 +328,13 @@
       content: '';
       position: absolute;
       inset: 0;
-      background: linear-gradient(90deg, transparent 0%, rgba(240,165,0,0.05) 50%, transparent 100%);
+      background: linear-gradient(90deg, transparent 0%, rgba(0, 122, 255, 0.05) 50%, transparent 100%);
       animation: shimmer 1.5s infinite;
     }
     .sk-line {
       height: 10px;
       border-radius: 5px;
-      background: rgba(255,255,255,0.06);
+      background: rgba(0, 0, 0, 0.06);
       margin-bottom: 10px;
     }
     .sk-line--sm { width: 40%; }
@@ -354,41 +346,30 @@
       background: var(--bg-card);
       border: 1px solid var(--border);
       border-radius: var(--radius);
-      padding: 20px;
+      padding: 18px;
       display: flex;
       flex-direction: column;
-      gap: 8px;
+      gap: 6px;
       position: relative;
       overflow: hidden;
       transition: var(--transition);
       cursor: default;
       opacity: 0;
       transform: translateY(12px);
+      box-shadow: var(--shadow-card);
     }
     .card.visible {
       opacity: 1;
       transform: translateY(0);
     }
-    .card::before {
-      content: '';
-      position: absolute;
-      top: 0; left: 0; right: 0;
-      height: 2px;
-      background: linear-gradient(90deg, transparent, var(--accent), transparent);
-      opacity: 0;
-      transition: var(--transition);
-    }
     .card:hover {
-      border-color: var(--border-hi);
       transform: translateY(-2px);
-      box-shadow: var(--shadow-card), var(--shadow-glow);
+      box-shadow: var(--shadow-card), 0 4px 16px rgba(0, 0, 0, 0.08);
     }
-    .card:hover::before { opacity: 1; }
     .card.is-base {
       border-color: var(--accent);
-      box-shadow: 0 0 0 1px rgba(240,165,0,0.15), var(--shadow-card);
+      box-shadow: 0 0 0 1px var(--accent), var(--shadow-card);
     }
-    .card.is-base::before { opacity: 1; }
     .card__symbol {
       font-size: 22px;
       line-height: 1;
@@ -397,7 +378,7 @@
       font-family: var(--font-mono);
     }
     .card__amount {
-      font-size: 24px;
+      font-size: 22px;
       font-weight: 700;
       font-family: var(--font-mono);
       color: var(--text-hi);
